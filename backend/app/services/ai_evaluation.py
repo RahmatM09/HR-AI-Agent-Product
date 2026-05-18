@@ -1,9 +1,12 @@
 import json
 
 from openai import OpenAI
+from google import genai
 from app.core.config import Settings
 
-client = OpenAI(api_key=Settings.OPENAI_API_KEY)
+# client = OpenAI(api_key=Settings.OPENAI_API_KEY)
+client = genai.Client(api_key=Settings.GEMINI_API_KEY)
+
 
 def build_evaluation_prompt(job_description: str, job_requirements: str, resume_text: str) -> str:
     return f"""
@@ -31,6 +34,9 @@ Rules:
 - shortlist only if the candidate is reasonably suitable for the job.
 - be fair and professional.
 - do not invent experience that is not in the resume.
+- mention specific matching skills when explaining the decision.
+- if a required skill is missing from the resume, mention it as a weakness.
+- do not reject a candidate for missing skills that were not part of the job requirements.
 
 Job Description:
 {job_description}
@@ -82,22 +88,28 @@ def evaluate_resume(job_description: str, job_requirements: str, resume_text: st
     )
 
     try:
-        response = client.chat.completions.create(
-            model="gpt_4o_mini", 
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a careful HR AI assistant that returns only valid JSON."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            temperature=0.2
+        # response = client.chat.completions.create(
+        #     model="gpt-4o-mini", 
+        #     messages=[
+        #         {
+        #             "role": "system",
+        #             "content": "You are a careful HR AI assistant that returns only valid JSON."
+        #         },
+        #         {
+        #             "role": "user",
+        #             "content": prompt
+        #         }
+        #     ],
+        #     temperature=0.2
+        # )
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
         )
 
-        content = response.choice[0].message.content
+        # content = response.choice[0].message.content
+        content = response.text
         result = json.loads(content)
 
         return validate_ai_result(result=result)
