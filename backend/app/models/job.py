@@ -15,5 +15,6 @@ class Job(Base):
     is_active = Column(Boolean, default=True)
 
     application = relationship("Application", back_populates="job")
-    recruiter = relationship("User", back_populates="jobs")
+    recruiter = relationship("User", back_populates="jobs") 
 
+ 

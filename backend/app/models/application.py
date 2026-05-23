@@ -20,3 +20,4 @@ class Application(Base):
     ai_recommendation = Column(Text, nullable=True)
 
     job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False)
+    job = relationship("Job", back_populates="application")
