@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.job import Job
+from app.models.application import Application
 from app.services.ai_evaluation import evaluate_resume
 from app.services.email_service import send_rejection_email, send_shortlist_email
 from app.services.resume_parser import extract_text_from_pdf
@@ -60,6 +61,23 @@ def apply_to_job(
     except Exception as error:
         raise HTTPException(status_code=500, detail=str(error))
     
+    application = Application(
+        applicant_name=name,
+        applicant_email=email,
+        resume_file_path=saved_file_path,
+        ai_score=ai_result["score"],
+        ai_status=ai_result["status"],
+        ai_reason=ai_result["reason"],
+        ai_strengths=", ".join(ai_result.get("strengths", [])),
+        ai_weaknesses=", ".join(ai_result.get("weaknesses", [])),
+        ai_recommendation=ai_result.get("recommendation"),
+        job_id=job.id,
+    )
+
+    db.add(application)
+    db.commit()
+    db.refresh(application)
+
     if ai_result["status"] == "shortlisted":
         send_shortlist_email(
             applicant_name=name,
@@ -83,4 +101,5 @@ def apply_to_job(
         "job_id": job.id,
         "job_title": job.title,
         "ai_result": ai_result,
+        "application_id": application.id
     }
