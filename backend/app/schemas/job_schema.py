@@ -10,6 +10,7 @@ class JobCreate(BaseModel):
 
 class JobResponse(BaseModel):
     id: int
+    recruiter_id: Optional[int] = None
     title: str
     description: str
     requirements: str
