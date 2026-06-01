@@ -18,6 +18,8 @@ class Settings:
     EMAIL_FROM: str = os.getenv("EMAIL_FROM", "")
     SECRET_KEY: str = os.getenv("SECRET_KEY", "change_this_secret_key")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change-this-key-later-for-production")
+    JWT_ALGORITHM= os.getenv("JWT_ALGORITHM", "HS256")
 
 
 settings = Settings()
