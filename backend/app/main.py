@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.routes import job_routes, apply_routes, auth_routes
+from app.routes import job_routes, apply_routes, auth_routes, dashboard_routes
 
 app = FastAPI(
     title="HR AI Agent Backend",
@@ -19,3 +19,4 @@ app.include_router(job_routes.router)
 app.include_router(apply_routes.router) 
 
 app.include_router(auth_routes.router)
+app.include_router(dashboard_routes.router)
