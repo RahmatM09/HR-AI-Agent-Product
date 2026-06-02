@@ -17,6 +17,7 @@ class Settings:
     EMAIL_USERNAME: str = os.getenv("EMAIL_USERNAME", "")
     EMAIL_PASSWORD: str = os.getenv("EMAIL_PASSWORD", "")
     EMAIL_FROM: str = os.getenv("EMAIL_FROM", "")
+    EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
     SECRET_KEY: str = os.getenv("SECRET_KEY", "change_this_secret_key")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "")

@@ -100,8 +100,10 @@ def apply_to_job(
     db.commit()
     db.refresh(application)
 
+    email_sent = False
+
     if ai_result["status"] == "shortlisted":
-        send_shortlist_email(
+        eamail_sent = send_shortlist_email(
             applicant_name=name,
             applicant_email=email,
             job_title=job.title,
@@ -109,7 +111,7 @@ def apply_to_job(
             reason=ai_result["reason"],
         )
     else:
-        send_rejection_email(
+        eamail_sent = send_rejection_email(
             applicant_name=name,
             applicant_email=email,
             job_title=job.title,
@@ -119,6 +121,7 @@ def apply_to_job(
     return{
         "message": "Application processed successfully.",
         "application_id": application.id,
+        "email_sent": eamail_sent,
         "applicant_name": name,
         "applicant_email": email,
         "job_id": job.id,
