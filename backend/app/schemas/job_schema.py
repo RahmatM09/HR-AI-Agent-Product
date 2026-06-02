@@ -19,3 +19,13 @@ class JobResponse(BaseModel):
 
     class Cinfig:
         from_attributes = True
+
+class PublicJobResponse(BaseModel):
+    id: int
+    title: str
+    description: str
+    requirements: str
+    location: Optional[str] = None
+    is_active: bool
+    recruiter_company_name: Optional[str] = None
+    
