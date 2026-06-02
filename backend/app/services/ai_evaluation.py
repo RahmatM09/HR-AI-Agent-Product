@@ -104,7 +104,7 @@ def evaluate_resume(job_description: str, job_requirements: str, resume_text: st
         # )
 
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=Settings.AI_MODEL,
             contents=prompt
         )
 

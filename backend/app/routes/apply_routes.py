@@ -1,9 +1,11 @@
 import os
 import shutil
 from uuid import uuid4
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy.orm import Session
+from app.core.config import settings
 
 from app.core.database import get_db
 from app.models.job import Job
@@ -61,16 +63,36 @@ def apply_to_job(
     except Exception as error:
         raise HTTPException(status_code=500, detail=str(error))
     
+    strengths = ai_result.get("strengths", [])
+    weaknesses = ai_result.get("weaknesses", [])
+
+    if not isinstance(strengths, list):
+        strengths = [str(strengths)]
+
+    if not isinstance(weaknesses, list):
+        weaknesses = [str(weaknesses)]
+
+    score = ai_result.get("score")
+    status_value = ai_result.get("status")
+    reason = ai_result.get("reason", "No reason provided.")
+    recommendation = ai_result.get("recommendation")
+
+    if status_value not in ["shortlisted", "rejected"]:
+        status_value = "rejected"
+
     application = Application(
         applicant_name=name,
         applicant_email=email,
         resume_file_path=saved_file_path,
-        ai_score=ai_result["score"],
-        ai_status=ai_result["status"],
-        ai_reason=ai_result["reason"],
-        ai_strengths=", ".join(ai_result.get("strengths", [])),
-        ai_weaknesses=", ".join(ai_result.get("weaknesses", [])),
-        ai_recommendation=ai_result.get("recommendation"),
+        evaluated_at=datetime.now(timezone.utc),
+        ai_score=score,
+        ai_status=status_value,
+        ai_reason=reason,
+        ai_strengths=", ".join(strengths),
+        ai_weaknesses=", ".join(weaknesses),
+        ai_recommendation=recommendation,
+        ai_provider=settings.AI_PROVIDER,
+        ai_model=settings.AI_MODEL,
         job_id=job.id,
     )
 
@@ -96,10 +118,20 @@ def apply_to_job(
 
     return{
         "message": "Application processed successfully.",
+        "application_id": application.id,
         "applicant_name": name,
         "applicant_email": email,
         "job_id": job.id,
         "job_title": job.title,
-        "ai_result": ai_result,
-        "application_id": application.id
+        "ai_result": {
+            "score": score,
+            "status": status_value,
+            "reason": reason,
+            "strengths": strengths,
+            "weaknesses": weaknesses,
+            "recommendation": recommendation,
+            "provider": settings.AI_PROVIDER,
+            "model": settings.AI_MODEL,
+            "evaluated_at": application.evaluated_at,
+        },
     }
