@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -57,3 +57,27 @@ def list_jobs(db: Session = Depends(get_db)):
         )
 
     return public_jobs
+
+
+@router.get("/{job_id}", response_model=PublicJobResponse)
+def get_job_details(job_id:int, db: Session = Depends(get_db)):
+    result = (
+        db.query(Job, User)
+        .join(User, Job.recruiter_id == User.id)
+        .filter(Job.id == job_id, Job.is_active == True).first()
+    )
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Job not found.")
+    
+    job, recruiter = result
+
+    return {
+        "id": job.id,
+        "title": job.title,
+        "description": job.description,
+        "requirements": job.requirements,
+        "location": job.location,
+        "is_active": job.is_active,
+        "recruiter_company_name": recruiter.company_name,
+    }
